@@ -2,12 +2,14 @@ import cv2
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 import settings
 
 from skimage import metrics
 
 # load uncompressed image
-image1 = cv2.imread(f'{settings.input_path}.png') 
+image1 = cv2.imread(f'{settings.input_path}.png')
+image1_plot = np.asarray(Image.open(f'{settings.input_path}.png')) 
 
 # separate image into its RGB channels
 image1_b = np.array(image1[:,:,0]) 
@@ -21,14 +23,20 @@ img_num = 1 # holds the index of the current subplot
 with open(settings.csv_file, mode='r', newline='') as file:
     reader = csv.reader(file)
     data = list(reader)
+    print(data)
 
-ssim_col_index = 6 # the index of the SSIM Index column in the csv file
+ssim_col_index = settings.iterations # the index of the SSIM Index column in the csv file
 
 ssim_indices = [] # will hold the mean SSIM indices of each comparison
 
 for y in range(3):
     for x in range(3):
         ax = axs[y, x] # set ax to be the current subplot to work on
+        
+        if x == 0 and y == 0:
+            ax.imshow(image1_plot)
+            continue
+
         output_path = f'{settings.output_path}_{img_num}.png' # open compressed image based on syntax specified from settings
 
         if img_num > settings.iterations: # break loop at 9th subplot as it is not needed
@@ -44,7 +52,7 @@ for y in range(3):
         image2_r = np.array(image2[:,:,2])
 
         # size of sliding window for SSIM heatmap generation
-        error_size = 13
+        error_size = 7
 
         # generate SSIM numpy arrays for each channel
         ssim_index_b, grad_b, S_b = metrics.structural_similarity(image1_b, image2_b, win_size=error_size, full=True, gradient=True)
@@ -79,9 +87,9 @@ with open(settings.csv_file, 'w', newline='') as file:
     writer.writerows(data)
 
 # format plot
-fig.suptitle(f'SSIM Heatmap comparing Uncompressed and Median Cut Compressed Images')
+fig.suptitle(' ')
 plt.tight_layout()
-plt.subplots_adjust(wspace=0.25, hspace=0.1)
+plt.subplots_adjust(wspace=0.1, hspace=0.25)
 plt.show()
 
 # TODO: create implentation of this but for other channels, like contrast

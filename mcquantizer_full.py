@@ -7,6 +7,7 @@ import settings
 
 input_path = settings.input_path    
 sample_img = imread(f'{input_path}.png')
+trials = settings.trials
 
 def median_cut_quantize(img, img_arr):
     # when it reaches the end, color quantize
@@ -59,18 +60,17 @@ for rindex, rows in enumerate(sample_img):
         
 flattened_img_array = np.array(flattened_img_array)
 
-
 # open csv file to begin file tracking
 
 with open(settings.csv_file, mode='w', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(['Palette Size (expressed as 2^n)', 'Time Taken 1', 'Time Taken 2', 'Time Taken 3', 'Time Taken 4', 'Time Taken 5', 'Mean SSIM Index'])  # Write header
+    writer.writerow(['Palette Size (expressed as 2^n)'] + [f'Time Taken {x + 1}' for x in range(trials)] + ['Mean SSIM Index'])  # Write header
     for n in range(1,settings.iterations + 1):
         output_path = f'{settings.output_path}_{n}.png'
 
         time_results = []
 
-        for i in range(5):
+        for i in range(trials):
             start = time()
             split_into_buckets(sample_img, flattened_img_array, n)
             end = time()
@@ -78,12 +78,9 @@ with open(settings.csv_file, mode='w', newline='') as file:
             time_taken = end - start
             time_results.append(time_taken)
 
-        # TODO: ADD DISTRIBUTION CURVE ANALYSIS (LIKELY IN SEPARATE FILE JUST TO ORGANIZE)
-        # nvm fuck that we're using SSIM analysis now
-
         # TODO: add MSE data collection? maybe? we'll see
 
-        writer.writerow([n, time_results[0], time_results[1], time_results[2], time_results[3], time_results[4], 0])
+        writer.writerow([n] + time_results + [0])
 
         imsave(output_path, sample_img)
         print(f"Image compressed with {2**n} colors. Time taken: {time_taken} seconds. Saved as {output_path}")
