@@ -17,13 +17,12 @@ image1_g = np.array(image1[:,:,1])
 image1_r = np.array(image1[:,:,2])
 
 # create matplotlib figure with subplots to organize heatmaps
-fig, axs = plt.subplots(3, 3, figsize=(10, 10))
+fig, axs = plt.subplots(3, 3, figsize=(8, 6))
 img_num = 1 # holds the index of the current subplot
 
 with open(settings.csv_file, mode='r', newline='') as file:
     reader = csv.reader(file)
     data = list(reader)
-    print(data)
 
 ssim_col_index = settings.iterations # the index of the SSIM Index column in the csv file
 
@@ -52,7 +51,7 @@ for y in range(3):
         image2_r = np.array(image2[:,:,2])
 
         # size of sliding window for SSIM heatmap generation
-        error_size = 7
+        error_size = 11
 
         # generate SSIM numpy arrays for each channel
         ssim_index_b, grad_b, S_b = metrics.structural_similarity(image1_b, image2_b, win_size=error_size, full=True, gradient=True)
@@ -69,7 +68,7 @@ for y in range(3):
 
         # create heatmap with colorbar set to a range of [0, 1]
         heatmap = ax.imshow(avg_S, cmap='Spectral')
-        ax.set_title(f'{2**img_num} Colours')
+        ax.set_title(f'{img_num} Iterations')
         plt.colorbar(heatmap, label="SSIM Index")
         heatmap.set_clim(0, 1)
 
